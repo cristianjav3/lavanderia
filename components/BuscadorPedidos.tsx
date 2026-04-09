@@ -12,7 +12,7 @@ type PedidoResult = {
   total: number;
   saldo: number;
   createdAt: string;
-  cliente: { nombre: string; telefono: string };
+  cliente: { nombre: string; telefono: string } | null;
 };
 
 interface Props {
@@ -183,9 +183,9 @@ export function BuscadorPedidos({ autoFocus }: Props) {
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 text-base truncate">
-                      {resultados[0].cliente.nombre}
+                      {resultados[0].cliente?.nombre ?? "—"}
                     </p>
-                    <p className="text-sm text-gray-500">{resultados[0].cliente.telefono}</p>
+                    <p className="text-sm text-gray-500">{resultados[0].cliente?.telefono ?? ""}</p>
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${ESTADO_COLORS[resultados[0].estado] ?? "bg-gray-100 text-gray-700"}`}>
                         {ESTADO_LABELS[resultados[0].estado] ?? resultados[0].estado}
@@ -226,7 +226,7 @@ export function BuscadorPedidos({ autoFocus }: Props) {
 
                       {/* Info cliente + estado */}
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 truncate">{p.cliente.nombre}</p>
+                        <p className="font-semibold text-gray-900 truncate">{p.cliente?.nombre ?? "—"}</p>
                         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                           <span className={`px-2 py-0.5 rounded text-xs font-medium ${ESTADO_COLORS[p.estado] ?? "bg-gray-100 text-gray-700"}`}>
                             {ESTADO_LABELS[p.estado] ?? p.estado}

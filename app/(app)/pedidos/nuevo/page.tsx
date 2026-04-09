@@ -130,10 +130,15 @@ export default function NuevoPedidoPage() {
 
     setBuscando(true);
     debounceRef.current = setTimeout(async () => {
-      const res = await fetch(`/api/clientes?q=${encodeURIComponent(val)}`);
-      const data: ClienteResult[] = await res.json();
-      setBusquedaResultados(Array.isArray(data) ? data : []);
-      setBuscando(false);
+      try {
+        const res = await fetch(`/api/clientes?q=${encodeURIComponent(val)}`);
+        const data = await res.json();
+        setBusquedaResultados(Array.isArray(data) ? data : []);
+      } catch {
+        setBusquedaResultados([]);
+      } finally {
+        setBuscando(false);
+      }
     }, 400);
   }
 

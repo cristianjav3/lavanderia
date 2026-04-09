@@ -29,18 +29,26 @@ export default async function PedidosPage({
 
   const empresaWhere = empresaId ? { empresaId: empresaId as never } : {};
 
+  const qClean = q ? q.trim().replace(/^#/, "") : null;
+  const qNum = qClean && /^\d+$/.test(qClean) ? parseInt(qClean) : null;
+
   const pedidos = await prisma.pedido.findMany({
     where: {
       ...empresaWhere,
       ...(estado ? { estado: estado as never } : {}),
-      ...(q
+      ...(qClean
         ? {
-            cliente: {
-              OR: [
-                { nombre: { contains: q, mode: "insensitive" } },
-                { telefono: { contains: q } },
-              ],
-            },
+            OR: [
+              ...(qNum !== null ? [{ numero: qNum }] : []),
+              {
+                cliente: {
+                  OR: [
+                    { nombre: { contains: qClean, mode: "insensitive" } },
+                    { telefono: { contains: qClean } },
+                  ],
+                },
+              },
+            ],
           }
         : {}),
     },

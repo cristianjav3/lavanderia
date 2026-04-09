@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import { ESTADO_LABELS, PAGO_COLORS, calcularCanastos } from "@/lib/constants";
@@ -39,6 +39,7 @@ export default function ImpresionPage() {
   const [loading, setLoading] = useState(true);
   const [showPrintPrompt, setShowPrintPrompt] = useState(false);
   const [printCount, setPrintCount] = useState<number | null>(null);
+  const ticketRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch(`/api/pedidos/${id}`)
@@ -63,27 +64,53 @@ export default function ImpresionPage() {
     window.print();
   }
 
-  function enviarTicketWA() {
-    if (!pedido) return;
-    const tel = pedido.cliente.telefono.replace(/\D/g, "");
-    const fecha = new Date(pedido.createdAt).toLocaleDateString("es-AR");
-    const items = pedido.items
-      .map((item) => {
-        const unidades = item.tipo === "canasto" ? Math.ceil(item.cantidad / 6) : item.cantidad;
-        const sub = unidades * item.precioUnitario;
-        return `• ${item.tipo === "canasto" ? `${unidades} canasto(s) (${item.cantidad} prendas)` : `${unidades} ${item.tipo}`}: $${sub.toLocaleString()}`;
-      })
-      .join("\n");
-    const msg = encodeURIComponent(
-      `*TICKET LAVANDERÍA #${pedido.numero}*\n` +
-      `Fecha: ${fecha}\n\n` +
-      `*SERVICIOS:*\n${items}\n\n` +
-      `*Total: $${pedido.total.toLocaleString()}*\n` +
-      `Pagado: $${pedido.pagado.toLocaleString()}\n` +
-      (pedido.saldo > 0 ? `Saldo pendiente: $${pedido.saldo.toLocaleString()}\n` : "") +
-      `\n¡Gracias por su confianza!`
-    );
-    window.open(`https://wa.me/${tel}?text=${msg}`, "_blank");
+  async function enviarTicketWA() {
+    if (!pedido || !ticketRef.current) return;
+
+    try {
+      const html2pdf = (await import("html2pdf.js")).default;
+
+      const opts = {
+        margin: 0,
+        image: { type: "jpeg" as const, quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: "mm", format: [58, 297] as [number, number], orientation: "portrait" as const },
+      };
+
+      // Generar PDF como blob
+      const blob: Blob = await html2pdf()
+        .set(opts)
+        .from(ticketRef.current)
+        .outputPdf("blob");
+
+      const file = new File([blob], `ticket-${pedido.numero}.pdf`, { type: "application/pdf" });
+
+      // En móvil: Web Share API abre el menú nativo → el usuario elige WhatsApp con el PDF adjunto
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `Ticket #${pedido.numero} — ${pedido.cliente.nombre}`,
+        });
+        return;
+      }
+
+      // Fallback desktop: descarga el PDF y abre WhatsApp en la conversación del cliente
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ticket-${pedido.numero}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      const tel = pedido.cliente.telefono.replace(/\D/g, "");
+      setTimeout(() => {
+        window.open(`https://wa.me/${tel}`, "_blank");
+      }, 500);
+    } catch {
+      // Fallback total: abrir WhatsApp con texto
+      const tel = pedido.cliente.telefono.replace(/\D/g, "");
+      window.open(`https://wa.me/${tel}`, "_blank");
+    }
   }
 
   if (loading) return <div className="p-8 text-gray-400">Cargando...</div>;
@@ -147,7 +174,7 @@ export default function ImpresionPage() {
 
       {/* Ticket */}
       <div className="ticket-wrapper">
-        <div className="ticket">
+        <div className="ticket" ref={ticketRef}>
           {/* Header: logo + QR */}
           <div className="ticket-header-row">
             <div className="ticket-logo">
@@ -292,11 +319,30 @@ export default function ImpresionPage() {
       </div>
 
       <style>{`
+        @page {
+          size: 58mm auto;
+          margin: 0;
+        }
+
         @media print {
           .no-print { display: none !important; }
-          body { background: white !important; margin: 0; }
-          .ticket-wrapper { display: flex; justify-content: center; padding: 0; }
-          .ticket { width: 320px; border: 1px solid #ccc; }
+          body {
+            width: 58mm;
+            margin: 0;
+            padding: 0;
+            background: white !important;
+          }
+          .ticket-wrapper {
+            display: block;
+            padding: 0;
+            margin: 0;
+          }
+          .ticket {
+            width: 58mm;
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
+          }
         }
 
         .ticket-wrapper {

@@ -128,15 +128,21 @@ export default function ClientesPage() {
     }
     setClienteSeleccionado(c);
     setLoadingHistorial(true);
-    const res = await fetch(`/api/clientes/${c.id}`);
-    const data: Pedido[] = await res.json();
+    try {
+      const res = await fetch(`/api/clientes/${c.id}`);
+      const data = await res.json();
+      const lista: Pedido[] = Array.isArray(data) ? data : [];
 
-    // Filtrar por tipo de servicio si está seleccionado
-    const pedidos = tipoServicio
-      ? data.filter((p) => p.items.some((i) => i.tipo === tipoServicio))
-      : data;
-    setHistorial(pedidos);
-    setLoadingHistorial(false);
+      // Filtrar por tipo de servicio si está seleccionado
+      const pedidos = tipoServicio
+        ? lista.filter((p) => p.items.some((i) => i.tipo === tipoServicio))
+        : lista;
+      setHistorial(pedidos);
+    } catch {
+      setHistorial([]);
+    } finally {
+      setLoadingHistorial(false);
+    }
   }
 
   function limpiarFiltros() {
