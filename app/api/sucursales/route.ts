@@ -11,7 +11,7 @@ function soloAuth(session: Awaited<ReturnType<typeof getServerSession>>) {
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   return null;
 }
-function soloAdmin(session: Awaited<ReturnType<typeof getServerSession>>) {
+function soloAdmin(session: any) {
   const auth = soloAuth(session);
   if (auth) return auth;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

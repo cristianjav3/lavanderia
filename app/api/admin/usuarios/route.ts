@@ -7,9 +7,9 @@ import bcrypt from "bcryptjs";
 
 type SessionUser = { id: string; role: string; empresaId?: string | null };
 
-function soloAdmin(session: Awaited<ReturnType<typeof getServerSession>>) {
+function soloAdmin(session: any) {
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  if ((session.user as { role: string }).role !== "admin")
+  if (session.user?.role !== "admin")
     return NextResponse.json({ error: "Solo admins" }, { status: 403 });
   return null;
 }
