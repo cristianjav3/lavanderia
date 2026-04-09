@@ -77,6 +77,9 @@ export default function NuevoPedidoPage() {
   const [pagado, setPagado] = useState("0");
   const [metodoPago, setMetodoPago] = useState<"efectivo" | "tarjeta" | "mercadopago">("efectivo");
 
+  // ── Observación del cliente ──────────────────────────────────────────────
+  const [observacionCliente, setObservacionCliente] = useState("");
+
   // ── Estado general ───────────────────────────────────────────────────────
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -270,6 +273,7 @@ export default function NuevoPedidoPage() {
           direccionEntrega: tipoEntrega === "domicilio" ? direccionEntrega.trim() : null,
           telefonoContacto: tipoEntrega === "domicilio" ? telefonoContacto.trim() : null,
           observacionEntrega: tipoEntrega === "domicilio" ? observacionEntrega.trim() || null : null,
+          observacionCliente: observacionCliente.trim() || null,
         }),
       });
 
@@ -569,6 +573,18 @@ export default function NuevoPedidoPage() {
                 rows={2} className="w-full border border-gray-300 rounded px-3 py-2 text-sm resize-none" />
             </div>
           )}
+        </div>
+
+        {/* ── OBSERVACIONES DEL CLIENTE ─────────────────────────────────── */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-2">
+          <h2 className="font-semibold">Observaciones del cliente</h2>
+          <textarea
+            value={observacionCliente}
+            onChange={(e) => setObservacionCliente(e.target.value)}
+            placeholder="Exigencias, alergias, instrucciones especiales... (opcional)"
+            rows={3}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm resize-none focus:outline-none focus:border-blue-500"
+          />
         </div>
 
         {/* ── PAGO ──────────────────────────────────────────────────────────── */}

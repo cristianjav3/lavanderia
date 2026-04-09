@@ -82,6 +82,7 @@ export async function POST(req: NextRequest) {
     direccionEntrega,
     telefonoContacto,
     observacionEntrega,
+    observacionCliente,
   } = body;
 
   type PedidoItemInput = { productoId: string; nombre: string; precioUnitario: number; cantidad: number };
@@ -164,6 +165,13 @@ export async function POST(req: NextRequest) {
           "observacionEntrega" = ${observacionEntrega ?? null}
       WHERE id = ${pedido.id}
     `;
+  }
+
+  // Guardar observación del cliente si viene
+  if (observacionCliente?.trim()) {
+    await prisma.observacion.create({
+      data: { pedidoId: pedido.id, texto: observacionCliente.trim() },
+    });
   }
 
   // Registrar pago inicial si corresponde
