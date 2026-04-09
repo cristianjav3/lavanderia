@@ -1,0 +1,322 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  empleado
+}
+
+enum EstadoPedido {
+  pendiente_recepcion
+  validacion
+  por_lavar
+  listo
+  en_reparto
+  no_entregado
+  en_sucursal
+  deposito
+  entregado
+  cancelado
+}
+
+enum EstadoPago {
+  pendiente
+  parcial
+  pagado
+}
+
+enum TipoEntrega {
+  domicilio
+  sucursal
+}
+
+enum TipoItem {
+  canasto
+  acolchado
+  zapatillas
+  secado
+}
+
+enum TipoPaquete {
+  canasto
+  acolchado
+}
+
+enum ResultadoEntrega {
+  entregado
+  no_entregado
+}
+
+enum EstadoCajon {
+  abierto
+  cerrado
+}
+
+enum TipoMovimiento {
+  ingreso
+  gasto
+}
+
+enum MetodoPago {
+  efectivo
+  tarjeta
+  mercadopago
+}
+
+model User {
+  id          String        @id @default(cuid())
+  name        String
+  email       String        @unique
+  password    String
+  telefono    String?
+  role        Role          @default(empleado)
+  activo      Boolean       @default(true)
+  sucursalId  String?
+  sucursal    Sucursal?     @relation(fields: [sucursalId], references: [id])
+  empresaId   String?
+  createdAt   DateTime      @default(now())
+  recepciones Recepcion[]
+  sesiones    CajaSesion[]
+}
+
+model ConceptoCaja {
+  id          String           @id @default(cuid())
+  nombre      String           @unique
+  tipo        TipoMovimiento
+  activo      Boolean          @default(true)
+  movimientos MovimientoCaja[]
+}
+
+model CajaSesion {
+  id               String           @id @default(cuid())
+  userId           String
+  user             User             @relation(fields: [userId], references: [id])
+  sucursalId       String?
+  empresaId        String?
+  saldoInicial     Float
+  saldoFinal       Float?
+  fechaCierre      DateTime?
+  estado           EstadoCajon      @default(abierto)
+  movimientos      MovimientoCaja[]
+  pagosRegistrados RegistroPago[]
+  createdAt        DateTime         @default(now())
+
+  @@map("CajaSesion")
+}
+
+model MovimientoCaja {
+  id          String         @id @default(cuid())
+  sesionId    String
+  sesion      CajaSesion     @relation(fields: [sesionId], references: [id])
+  tipo        TipoMovimiento
+  conceptoId  String?
+  concepto    ConceptoCaja?  @relation(fields: [conceptoId], references: [id])
+  descripcion String?
+  monto       Float
+  createdAt   DateTime       @default(now())
+}
+
+model Cliente {
+  id        String   @id @default(cuid())
+  nombre    String
+  telefono  String
+  direccion String?
+  empresaId String?
+  createdAt DateTime @default(now())
+  pedidos   Pedido[]
+}
+
+model Sucursal {
+  id        String  @id @default(cuid())
+  nombre    String
+  activa    Boolean @default(true)
+  direccion String?
+  telefono  String?
+  empresaId String?
+  users     User[]
+
+  @@unique([empresaId, nombre])
+}
+
+model Pedido {
+  id               String        @id @default(cuid())
+  numero           Int           @default(autoincrement())
+  clienteId        String
+  empresaId        String?
+  cliente          Cliente       @relation(fields: [clienteId], references: [id])
+  estado           EstadoPedido  @default(pendiente_recepcion)
+  estadoPago       EstadoPago    @default(pendiente)
+  total            Float         @default(0)
+  pagado           Float         @default(0)
+  saldo            Float         @default(0)
+  fechaRetiro      DateTime?
+  franjaHoraria    String?
+  tipoEntrega      TipoEntrega   @default(sucursal)
+  sucursal         String?
+  enDeposito       Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  items            Item[]
+  paquetes         Paquete[]
+  recepcion        Recepcion?
+  observaciones    Observacion[]
+  fotos            Foto[]
+  entregas         Entrega[]
+  pagosRegistrados RegistroPago[]
+  printCount          Int               @default(0)
+  logsEstado          LogEstadoPedido[]
+  direccionEntrega    String?
+  telefonoContacto    String?
+  observacionEntrega  String?
+  pedidoItems         PedidoItem[]
+}
+
+model RegistroPago {
+  id         String     @id @default(cuid())
+  pedidoId   String
+  pedido     Pedido     @relation(fields: [pedidoId], references: [id])
+  sesionId   String?
+  sesion     CajaSesion? @relation(fields: [sesionId], references: [id])
+  empresaId  String?
+  monto      Float
+  metodoPago MetodoPago
+  createdAt  DateTime   @default(now())
+}
+
+model Item {
+  id             String   @id @default(cuid())
+  pedidoId       String
+  pedido         Pedido   @relation(fields: [pedidoId], references: [id])
+  tipo           TipoItem
+  cantidad       Int
+  precioUnitario Float
+}
+
+model Paquete {
+  id            String      @id @default(cuid())
+  pedidoId      String
+  pedido        Pedido      @relation(fields: [pedidoId], references: [id])
+  tipo          TipoPaquete
+  numero        Int
+  totalPaquetes Int
+}
+
+model Recepcion {
+  id                 String   @id @default(cuid())
+  pedidoId           String   @unique
+  pedido             Pedido   @relation(fields: [pedidoId], references: [id])
+  empleadoId         String
+  empleado           User     @relation(fields: [empleadoId], references: [id])
+  notas              String?
+  requiereValidacion Boolean  @default(false)
+  createdAt          DateTime @default(now())
+}
+
+model Observacion {
+  id        String   @id @default(cuid())
+  pedidoId  String
+  pedido    Pedido   @relation(fields: [pedidoId], references: [id])
+  texto     String
+  createdAt DateTime @default(now())
+}
+
+model Foto {
+  id        String   @id @default(cuid())
+  pedidoId  String
+  pedido    Pedido   @relation(fields: [pedidoId], references: [id])
+  url       String
+  createdAt DateTime @default(now())
+}
+
+model Entrega {
+  id           String           @id @default(cuid())
+  pedidoId     String
+  pedido       Pedido           @relation(fields: [pedidoId], references: [id])
+  fechaIntento DateTime         @default(now())
+  resultado    ResultadoEntrega
+  recargo      Float            @default(0)
+}
+
+// dia: 0=lunes … 6=domingo; franjas: [{desde:"HH:MM", hasta:"HH:MM"}]
+model ConfiguracionChofer {
+  id        String   @id @default(cuid())
+  dia       Int      @unique
+  activo    Boolean  @default(true)
+  franjas   Json     @default("[]")
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("ConfiguracionChofer")
+}
+
+// tipo: 'servicio' | 'producto'
+// unidad: unidad de medida opcional (ej: 'prenda', 'unidad', 'kg')
+model Producto {
+  id        String      @id @default(cuid())
+  empresaId String
+  nombre    String
+  tipo      String
+  precio    Float       @default(0)
+  unidad    String?
+  activo    Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  pedidoItems PedidoItem[]
+}
+
+// Snapshot de producto al momento del pedido.
+// productoId es nullable para cubrir productos eliminados o tipos sin producto aún.
+// nombreProducto y precioUnitario son copias inmutables.
+model PedidoItem {
+  id             String    @id @default(cuid())
+  pedidoId       String
+  pedido         Pedido    @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  productoId     String?
+  producto       Producto? @relation(fields: [productoId], references: [id], onDelete: SetNull)
+  nombreProducto String
+  precioUnitario Float
+  cantidad       Int
+  createdAt      DateTime  @default(now())
+}
+
+model Empresa {
+  id               String                @id @default(cuid())
+  nombre           String
+  nombreComercial  String?
+  razonSocial      String?
+  cuit             String?
+  telefono         String
+  direccion        String
+  logoUrl          String?
+  colorPrincipal   String?
+  accessKey        String?
+  createdAt        DateTime              @default(now())
+  configuracion ConfiguracionEmpresa?
+}
+
+model ConfiguracionEmpresa {
+  id                    String   @id @default(cuid())
+  empresaId             String   @unique
+  empresa               Empresa  @relation(fields: [empresaId], references: [id])
+  // diasChofer: [0,1,2,3,4]  (0=lunes … 6=domingo)
+  diasChofer            Json     @default("[]")
+  // franjasHorariasChofer: {"0":[{"desde":"09:00","hasta":"12:00"}], ...}
+  franjasHorariasChofer Json     @default("{}")
+  createdAt             DateTime @default(now())
+}
+
+model LogEstadoPedido {
+  id             String   @id @default(cuid())
+  pedidoId       String
+  pedido         Pedido   @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  estadoAnterior String
+  estadoNuevo    String
+  userId         String
+  userName       String
+  motivo         String?
+  createdAt      DateTime @default(now())
+}

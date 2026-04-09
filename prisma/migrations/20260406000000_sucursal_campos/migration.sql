@@ -1,0 +1,2 @@
+ALTER TABLE "Sucursal" ADD COLUMN IF NOT EXISTS "direccion" TEXT;
+ALTER TABLE "Sucursal" ADD COLUMN IF NOT EXISTS "telefono" TEXT;

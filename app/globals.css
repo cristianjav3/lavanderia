@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@media print {
+  nav, .print\:hidden { display: none !important; }
+  body { background: white; }
+  main { padding: 0 !important; max-width: 100% !important; }
+}

@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx prisma:*)",
+      "Bash(curl -s -L -c /tmp/cookies.txt http://localhost:3000/ -w \"\\\\nFINAL_URL: %{url_effective}\\\\nSTATUS: %{http_code}\")",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(npm run:*)",
+      "Bash(curl -s http://localhost:3000/dashboard -o /dev/null -w \"%{http_code}\")",
+      "Bash(netstat -ano)",
+      "Bash(taskkill /PID 21908 /F)",
+      "Bash(cmd /c \"taskkill /PID 21908 /F\")",
+      "Bash(cmd /c \"taskkill /F /IM node.exe\")",
+      "Bash(cmd /c \"taskkill /PID 21908 /F /T\")",
+      "Bash(ls c:/claude/lavanderia/docker* c:/claude/lavanderia/Docker*)",
+      "Bash(taskkill //F //IM node.exe)",
+      "Bash(where go:*)",
+      "Bash(winget list:*)",
+      "Bash(export PATH=\"$PATH:/c/Program Files/Go/bin\")",
+      "Bash(go mod:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node --input-type=module)",
+      "Bash(2>&1)",
+      "Bash(xargs grep:*)"
+    ]
+  }
+}
