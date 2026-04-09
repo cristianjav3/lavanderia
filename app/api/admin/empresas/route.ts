@@ -6,9 +6,9 @@ import { resolveEmpresaId } from "@/lib/empresa";
 
 type EmpresaRow = { id: string; nombre: string; nombreComercial: string | null; logoUrl: string | null; colorPrincipal: string | null; hasKey: boolean };
 
-function soloAdmin(session: Awaited<ReturnType<typeof getServerSession>>) {
+function soloAdmin(session: any) {
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  if ((session.user as { role?: string })?.role !== "admin")
+  if (session.user?.role !== "admin")
     return NextResponse.json({ error: "Solo admins" }, { status: 403 });
   return null;
 }
