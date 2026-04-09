@@ -7,10 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:migrate": "prisma migrate dev --name init",
-    "db:seed": "ts-node prisma/seed.ts",
-    "db:reset": "prisma migrate reset --force && npm run db:seed",
-    "db:studio": "prisma studio"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",
@@ -18,20 +15,19 @@
     "next": "16.2.2",
     "next-auth": "^4.24.13",
     "prisma": "^6.0.0",
-    "qrcode.react": "^4.2.0",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "recharts": "^3.8.1"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/postcss": "^4.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.2",
-    "tailwindcss": "^4",
+    "eslint-config-next": "^16.2.2",
+    "tailwindcss": "^4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5"
   }
