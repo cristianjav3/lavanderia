@@ -71,6 +71,13 @@ export default function LoginPage() {
             {loading ? "Ingresando..." : "Ingresar"}
           </button>
         </form>
+
+        <p className="text-center text-xs text-gray-400 mt-6">
+          ¿Primera vez?{" "}
+          <a href="/registro" className="text-blue-600 hover:underline font-medium">
+            Crear cuenta
+          </a>
+        </p>
       </div>
     </div>
   );
