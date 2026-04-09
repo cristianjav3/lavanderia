@@ -18,21 +18,26 @@ export default function RegistroPage() {
     setLoading(true);
     setError("");
 
-    const res = await fetch("/api/registro", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nombre, email, password, codigo }),
-    });
+    try {
+      const res = await fetch("/api/registro", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, email, password, codigo }),
+      });
 
-    const data = await res.json();
-    setLoading(false);
+      const data = await res.json();
 
-    if (!res.ok) {
-      setError(data.error ?? "Error al crear el usuario");
-      return;
+      if (!res.ok) {
+        setError(data.error ?? "Error al crear el usuario");
+        return;
+      }
+
+      setOk(true);
+    } catch {
+      setError("Error de conexión. Intenta de nuevo.");
+    } finally {
+      setLoading(false);
     }
-
-    setOk(true);
   }
 
   if (ok) {
