@@ -64,53 +64,57 @@ export default function ImpresionPage() {
     window.print();
   }
 
-  async function enviarTicketWA() {
-    if (!pedido || !ticketRef.current) return;
+  function enviarTicketWA() {
+    if (!pedido) return;
+    const tel = pedido.cliente.telefono.replace(/\D/g, "");
+    const fecha = new Date(pedido.createdAt);
+    const fechaStr = fecha.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
+    const horaStr = fecha.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
 
-    try {
-      const html2pdf = (await import("html2pdf.js")).default;
+    const itemsTexto = pedido.items
+      .map((item) => {
+        const unidades = item.tipo === "canasto" ? calcularCanastos(item.cantidad) : item.cantidad;
+        const sub = unidades * item.precioUnitario;
+        const label = item.tipo === "canasto"
+          ? `${unidades} canasto${unidades > 1 ? "s" : ""} (${item.cantidad} prendas)`
+          : `${unidades} ${TIPO_LABELS[item.tipo] ?? item.tipo}`;
+        return `• ${label}: $${sub.toLocaleString()}`;
+      })
+      .join("\n");
 
-      const opts = {
-        margin: 0,
-        image: { type: "jpeg" as const, quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: "mm", format: [58, 297] as [number, number], orientation: "portrait" as const },
-      };
+    const entregaTexto = pedido.tipoEntrega === "domicilio"
+      ? `🚚 Entrega a domicilio${pedido.fechaRetiro ? `\n📅 Fecha: ${new Date(pedido.fechaRetiro).toLocaleDateString("es-AR")}` : ""}${pedido.franjaHoraria ? `\n🕐 Horario: ${pedido.franjaHoraria}` : ""}${pedido.cliente.direccion ? `\n📍 Dirección: ${pedido.cliente.direccion}` : ""}`
+      : `🏪 Retiro en sucursal${pedido.sucursal ? `: ${pedido.sucursal}` : ""}`;
 
-      // Generar PDF como blob
-      const blob: Blob = await html2pdf()
-        .set(opts)
-        .from(ticketRef.current)
-        .outputPdf("blob");
+    const observacionesTexto = pedido.observaciones.length > 0
+      ? `\n\n📝 *OBSERVACIONES*\n${pedido.observaciones.map((o) => `• ${o.texto}`).join("\n")}`
+      : "";
 
-      const file = new File([blob], `ticket-${pedido.numero}.pdf`, { type: "application/pdf" });
+    const pagoEstado = pedido.estadoPago === "pagado"
+      ? "✅ PAGADO"
+      : pedido.estadoPago === "parcial"
+      ? "⚠️ PAGO PARCIAL"
+      : "❌ PAGO PENDIENTE";
 
-      // En móvil: Web Share API abre el menú nativo → el usuario elige WhatsApp con el PDF adjunto
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: `Ticket #${pedido.numero} — ${pedido.cliente.nombre}`,
-        });
-        return;
-      }
-
-      // Fallback desktop: descarga el PDF y abre WhatsApp en la conversación del cliente
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `ticket-${pedido.numero}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-
-      const tel = pedido.cliente.telefono.replace(/\D/g, "");
-      setTimeout(() => {
-        window.open(`https://wa.me/${tel}`, "_blank");
-      }, 500);
-    } catch {
-      // Fallback total: abrir WhatsApp con texto
-      const tel = pedido.cliente.telefono.replace(/\D/g, "");
-      window.open(`https://wa.me/${tel}`, "_blank");
-    }
+    const msg = encodeURIComponent(
+      `🧺 *TICKET LAVANDERÍA #${pedido.numero}*\n` +
+      `📅 ${fechaStr} — 🕐 ${horaStr}\n` +
+      `──────────────────\n\n` +
+      `👤 *CLIENTE*\n` +
+      `Nombre: ${pedido.cliente.nombre}\n` +
+      `Tel: ${pedido.cliente.telefono}\n\n` +
+      `📦 *SERVICIOS*\n${itemsTexto}\n\n` +
+      `🚀 *ENTREGA*\n${entregaTexto}` +
+      observacionesTexto + `\n\n` +
+      `──────────────────\n` +
+      `💰 *RESUMEN DE PAGO*\n` +
+      `Total: $${pedido.total.toLocaleString()}\n` +
+      `Pagado: $${pedido.pagado.toLocaleString()}\n` +
+      (pedido.saldo > 0 ? `Saldo pendiente: *$${pedido.saldo.toLocaleString()}*\n` : "") +
+      `Estado: ${pagoEstado}\n\n` +
+      `¡Gracias por confiar en nosotros! 🙏`
+    );
+    window.open(`https://wa.me/${tel}?text=${msg}`, "_blank");
   }
 
   if (loading) return <div className="p-8 text-gray-400">Cargando...</div>;
