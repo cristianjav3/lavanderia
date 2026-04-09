@@ -15,8 +15,8 @@ export async function POST() {
   const id = crypto.randomUUID();
 
   await prisma.$executeRaw`
-    INSERT INTO "User" (id, name, email, password, role, activo, "createdAt", "updatedAt")
-    VALUES (${id}, 'Administrador', 'admin@lavanderia.com', ${hash}, 'admin', true, NOW(), NOW())
+    INSERT INTO "User" (id, name, email, password, role, activo, "createdAt")
+    VALUES (${id}, 'Administrador', 'admin@lavanderia.com', ${hash}, 'admin', true, NOW())
   `;
 
   return NextResponse.json({ ok: true, message: "Administrador creado correctamente" });

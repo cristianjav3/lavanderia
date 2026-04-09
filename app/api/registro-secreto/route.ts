@@ -36,8 +36,8 @@ export async function POST(req: NextRequest) {
   const userId = crypto.randomUUID();
 
   await prisma.$executeRaw`
-    INSERT INTO "User" (id, name, email, password, role, activo, "empresaId", "createdAt", "updatedAt")
-    VALUES (${userId}, ${nombre.trim()}, ${email.trim().toLowerCase()}, ${hash}, 'admin', true, ${empresaId}, NOW(), NOW())
+    INSERT INTO "User" (id, name, email, password, role, activo, "empresaId", "createdAt")
+    VALUES (${userId}, ${nombre.trim()}, ${email.trim().toLowerCase()}, ${hash}, 'admin', true, ${empresaId}, NOW())
   `;
 
   return NextResponse.json({ ok: true });

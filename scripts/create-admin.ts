@@ -31,8 +31,8 @@ async function main() {
   const id = crypto.randomUUID();
 
   await prisma.$executeRaw`
-    INSERT INTO "User" (id, name, email, password, role, activo, "createdAt", "updatedAt")
-    VALUES (${id}, ${NAME}, ${EMAIL}, ${hash}, 'admin', true, NOW(), NOW())
+    INSERT INTO "User" (id, name, email, password, role, activo, "createdAt")
+    VALUES (${id}, ${NAME}, ${EMAIL}, ${hash}, 'admin', true, NOW())
   `;
 
   console.log("✓ Usuario administrador creado:");
