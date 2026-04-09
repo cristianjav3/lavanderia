@@ -238,57 +238,57 @@ export default function ClientesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filtrados.map((c) => {
+              {filtrados.flatMap((c) => {
                 const freq = frecuenciaLabel(c.totalPedidos);
                 const seleccionado = clienteSeleccionado?.id === c.id;
-                return (
-                  <>
-                    <tr
-                      key={c.id}
-                      className={`hover:bg-gray-50 cursor-pointer ${seleccionado ? "bg-blue-50" : ""}`}
-                      onClick={() => verHistorial(c)}
-                    >
-                      <td className="px-4 py-2 font-medium">{c.nombre}</td>
-                      <td className="px-4 py-2 text-gray-500">
-                        <a
-                          href={`https://wa.me/${c.telefono.replace(/\D/g, "")}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-green-600 hover:underline"
-                        >
-                          {c.telefono}
-                        </a>
-                      </td>
-                      <td className="px-4 py-2 font-bold">{c.totalPedidos}</td>
-                      <td className="px-4 py-2">${c.totalGastado.toLocaleString()}</td>
-                      <td className="px-4 py-2 text-gray-500 text-xs">
-                        {c.ultimaCompra ? new Date(c.ultimaCompra).toLocaleDateString("es-AR") : "—"}
-                      </td>
-                      <td className="px-4 py-2">
-                        <span className={`text-xs px-2 py-0.5 rounded font-medium ${freq.color}`}>
-                          {freq.label}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2 text-xs text-blue-600">
-                        {seleccionado ? "▲ Ocultar" : "▼ Ver historial"}
+                const rows = [
+                  <tr
+                    key={c.id}
+                    className={`hover:bg-gray-50 cursor-pointer ${seleccionado ? "bg-blue-50" : ""}`}
+                    onClick={() => verHistorial(c)}
+                  >
+                    <td className="px-4 py-2 font-medium">{c.nombre}</td>
+                    <td className="px-4 py-2 text-gray-500">
+                      <a
+                        href={`https://wa.me/${c.telefono.replace(/\D/g, "")}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-green-600 hover:underline"
+                      >
+                        {c.telefono}
+                      </a>
+                    </td>
+                    <td className="px-4 py-2 font-bold">{c.totalPedidos}</td>
+                    <td className="px-4 py-2">${c.totalGastado.toLocaleString()}</td>
+                    <td className="px-4 py-2 text-gray-500 text-xs">
+                      {c.ultimaCompra ? new Date(c.ultimaCompra).toLocaleDateString("es-AR") : "—"}
+                    </td>
+                    <td className="px-4 py-2">
+                      <span className={`text-xs px-2 py-0.5 rounded font-medium ${freq.color}`}>
+                        {freq.label}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 text-xs text-blue-600">
+                      {seleccionado ? "▲ Ocultar" : "▼ Ver historial"}
+                    </td>
+                  </tr>,
+                ];
+                if (seleccionado) {
+                  rows.push(
+                    <tr key={`${c.id}-historial`}>
+                      <td colSpan={7} className="bg-blue-50 px-4 py-3">
+                        <HistorialCliente
+                          loading={loadingHistorial}
+                          historial={historial}
+                          nombre={c.nombre}
+                          tipoServicio={tipoServicio}
+                        />
                       </td>
                     </tr>
-
-                    {seleccionado && (
-                      <tr key={`${c.id}-historial`}>
-                        <td colSpan={7} className="bg-blue-50 px-4 py-3">
-                          <HistorialCliente
-                            loading={loadingHistorial}
-                            historial={historial}
-                            nombre={c.nombre}
-                            tipoServicio={tipoServicio}
-                          />
-                        </td>
-                      </tr>
-                    )}
-                  </>
-                );
+                  );
+                }
+                return rows;
               })}
             </tbody>
           </table>
