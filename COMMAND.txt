@@ -1,0 +1,4 @@
+
+##Cuando exista cambios en el schema.prisma
+
+npx run prisma db push
