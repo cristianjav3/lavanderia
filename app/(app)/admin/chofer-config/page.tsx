@@ -14,9 +14,11 @@ export default function ChoferConfigPage() {
 
   useEffect(() => {
     fetch("/api/admin/chofer-config")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`Error ${r.status}`);
+        return r.json();
+      })
       .then((data: DiaConfig[]) => {
-        // Ensure franjas is always an array
         setConfigs(
           data.map((d) => ({
             ...d,
@@ -24,7 +26,8 @@ export default function ChoferConfigPage() {
           }))
         );
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   async function guardar(dia: number) {

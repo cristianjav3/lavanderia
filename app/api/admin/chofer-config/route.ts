@@ -5,7 +5,7 @@ import { authOptions } from "@/lib/auth";
 
 type ConfigRow = { id: string; dia: number; activo: boolean; franjas: unknown };
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
@@ -15,6 +15,21 @@ export async function GET(req: NextRequest) {
     FROM "ConfiguracionChofer"
     ORDER BY dia ASC
   `;
+
+  // Si la tabla está vacía, insertar los 7 días con valores por defecto
+  if (rows.length === 0) {
+    for (let dia = 0; dia < 7; dia++) {
+      await prisma.$executeRaw`
+        INSERT INTO "ConfiguracionChofer" (id, dia, activo, franjas)
+        VALUES (gen_random_uuid()::text, ${dia}, false, '[]'::jsonb)
+        ON CONFLICT DO NOTHING
+      `;
+    }
+    const seeded = await prisma.$queryRaw<ConfigRow[]>`
+      SELECT id, dia, activo, franjas FROM "ConfiguracionChofer" ORDER BY dia ASC
+    `;
+    return NextResponse.json(seeded);
+  }
 
   return NextResponse.json(rows);
 }

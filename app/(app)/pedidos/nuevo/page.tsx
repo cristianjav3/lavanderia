@@ -399,29 +399,6 @@ export default function NuevoPedidoPage() {
           <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
             <h2 className="font-semibold">Productos</h2>
 
-            {/* Productos seleccionados */}
-            {pedidoItems.length > 0 && (
-              <div className="space-y-1.5 mb-2">
-                {pedidoItems.map((pi, i) => (
-                  <div key={i} className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded px-3 py-2">
-                    <span className="text-sm font-medium flex-1">{pi.nombre}</span>
-                    <span className="text-xs text-gray-500">${pi.precioUnitario.toLocaleString()} c/u</span>
-                    <div className="flex items-center gap-1.5">
-                      <button type="button" onClick={() => cambiarCantidadProducto(i, -1)}
-                        className="w-5 h-5 rounded bg-white border border-gray-300 text-xs font-bold hover:bg-gray-50 flex items-center justify-center">−</button>
-                      <span className="text-sm font-medium w-4 text-center">{pi.cantidad}</span>
-                      <button type="button" onClick={() => cambiarCantidadProducto(i, 1)}
-                        className="w-5 h-5 rounded bg-white border border-gray-300 text-xs font-bold hover:bg-gray-50 flex items-center justify-center">+</button>
-                    </div>
-                    <span className="text-sm font-semibold text-blue-700 w-20 text-right">
-                      ${(pi.precioUnitario * pi.cantidad).toLocaleString()}
-                    </span>
-                    <button type="button" onClick={() => quitarProducto(i)} className="text-red-400 text-xs hover:text-red-600">✕</button>
-                  </div>
-                ))}
-              </div>
-            )}
-
             {/* Lista de productos disponibles */}
             <div className="grid grid-cols-2 gap-2">
               {productos.map((p) => (
@@ -458,6 +435,25 @@ export default function NuevoPedidoPage() {
           {items.length === 0 && pedidoItems.length === 0 && (
             <p className="text-xs text-gray-400">Agregá servicios o seleccioná productos arriba.</p>
           )}
+
+          {/* Productos seleccionados desde la grilla */}
+          {pedidoItems.map((pi, i) => (
+            <div key={`prod-${i}`} className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded px-3 py-2">
+              <span className="text-sm font-medium flex-1">{pi.nombre}</span>
+              <span className="text-xs text-gray-500">${pi.precioUnitario.toLocaleString()} c/u</span>
+              <div className="flex items-center gap-1.5">
+                <button type="button" onClick={() => cambiarCantidadProducto(i, -1)}
+                  className="w-5 h-5 rounded bg-white border border-gray-300 text-xs font-bold hover:bg-gray-50 flex items-center justify-center">−</button>
+                <span className="text-sm font-medium w-4 text-center">{pi.cantidad}</span>
+                <button type="button" onClick={() => cambiarCantidadProducto(i, 1)}
+                  className="w-5 h-5 rounded bg-white border border-gray-300 text-xs font-bold hover:bg-gray-50 flex items-center justify-center">+</button>
+              </div>
+              <span className="text-sm font-semibold text-blue-700 w-20 text-right">
+                ${(pi.precioUnitario * pi.cantidad).toLocaleString()}
+              </span>
+              <button type="button" onClick={() => quitarProducto(i)} className="text-red-400 text-xs hover:text-red-600">✕</button>
+            </div>
+          ))}
 
           {items.map((item, i) => (
             <div key={i} className="flex gap-2 items-center">
