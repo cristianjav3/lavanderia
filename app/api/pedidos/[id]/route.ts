@@ -10,6 +10,13 @@ type DeliveryFields = {
   observacionEntrega: string | null;
 };
 
+type PedidoItemRow = {
+  id: string;
+  nombreProducto: string;
+  precioUnitario: number;
+  cantidad: number;
+};
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -39,13 +46,19 @@ export async function GET(
 
   if (!pedido) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
 
-  // Fetch delivery fields added after prisma generate (not in generated client)
-  const extra = await prisma.$queryRaw<DeliveryFields[]>`
-    SELECT "direccionEntrega", "telefonoContacto", "observacionEntrega"
-    FROM "Pedido" WHERE id = ${id}
-  `;
+  const [extra, pedidoItems] = await Promise.all([
+    prisma.$queryRaw<DeliveryFields[]>`
+      SELECT "direccionEntrega", "telefonoContacto", "observacionEntrega"
+      FROM "Pedido" WHERE id = ${id}
+    `,
+    prisma.$queryRaw<PedidoItemRow[]>`
+      SELECT id, "nombreProducto", "precioUnitario", cantidad
+      FROM "PedidoItem" WHERE "pedidoId" = ${id}
+      ORDER BY "createdAt" ASC
+    `,
+  ]);
 
-  return NextResponse.json({ ...pedido, ...(extra[0] ?? {}) });
+  return NextResponse.json({ ...pedido, ...(extra[0] ?? {}), pedidoItems });
 }
 
 export async function PATCH(

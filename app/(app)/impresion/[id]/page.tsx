@@ -6,6 +6,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { ESTADO_LABELS, PAGO_COLORS, calcularCanastos } from "@/lib/constants";
 
 type Item = { id: string; tipo: string; cantidad: number; precioUnitario: number };
+type PedidoItem = { id: string; nombreProducto: string; precioUnitario: number; cantidad: number };
 type Pedido = {
   id: string;
   numero: number;
@@ -21,6 +22,7 @@ type Pedido = {
   createdAt: string;
   cliente: { nombre: string; telefono: string; direccion?: string };
   items: Item[];
+  pedidoItems: PedidoItem[];
   recepcion?: { notas?: string };
   observaciones: { texto: string }[];
 };
@@ -71,16 +73,19 @@ export default function ImpresionPage() {
     const fechaStr = fecha.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" });
     const horaStr = fecha.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
 
-    const itemsTexto = pedido.items
-      .map((item) => {
+    const itemsTexto = [
+      ...pedido.items.map((item) => {
         const unidades = item.tipo === "canasto" ? calcularCanastos(item.cantidad) : item.cantidad;
         const sub = unidades * item.precioUnitario;
         const label = item.tipo === "canasto"
           ? `${unidades} canasto${unidades > 1 ? "s" : ""} (${item.cantidad} prendas)`
           : `${unidades} ${TIPO_LABELS[item.tipo] ?? item.tipo}`;
         return `• ${label}: $${sub.toLocaleString()}`;
-      })
-      .join("\n");
+      }),
+      ...(pedido.pedidoItems ?? []).map((pi) =>
+        `• ${pi.cantidad > 1 ? `${pi.cantidad}x ` : ""}${pi.nombreProducto}: $${(pi.precioUnitario * pi.cantidad).toLocaleString()}`
+      ),
+    ].join("\n");
 
     const entregaTexto = pedido.tipoEntrega === "domicilio"
       ? `🚚 Entrega a domicilio${pedido.fechaRetiro ? `\n📅 Fecha: ${new Date(pedido.fechaRetiro).toLocaleDateString("es-AR")}` : ""}${pedido.franjaHoraria ? `\n🕐 Horario: ${pedido.franjaHoraria}` : ""}${pedido.cliente.direccion ? `\n📍 Dirección: ${pedido.cliente.direccion}` : ""}`
@@ -241,6 +246,12 @@ export default function ImpresionPage() {
                 </div>
               );
             })}
+            {pedido.pedidoItems?.map((pi) => (
+              <div key={pi.id} className="ticket-row-precio">
+                <span>{pi.cantidad > 1 ? `${pi.cantidad}x ` : ""}{pi.nombreProducto}</span>
+                <span>${(pi.precioUnitario * pi.cantidad).toLocaleString()}</span>
+              </div>
+            ))}
           </div>
 
           <div className="ticket-divider" />
