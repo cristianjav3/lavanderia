@@ -160,46 +160,45 @@ export default async function PedidosPage({
       {pedidos.length > 0 && (
         <div className="sm:hidden space-y-2">
           {pedidos.map((p) => (
-            <Link
-              key={p.id}
-              href={`/pedidos/${p.id}`}
-              className="block bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-300 active:bg-blue-50 transition-colors"
-            >
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="min-w-0">
-                  <span className="font-mono text-xs text-gray-400">#{(p as typeof p & { numero: number }).numero}</span>
-                  <p className="font-semibold text-gray-900 truncate">{p.cliente.nombre}</p>
-                  <p className="text-xs text-gray-500">{p.cliente.telefono}</p>
+            <div key={p.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+              <Link
+                href={`/pedidos/${p.id}`}
+                className="block p-4 hover:border-blue-300 active:bg-blue-50 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="min-w-0">
+                    <span className="font-mono text-xs text-gray-400">#{(p as typeof p & { numero: number }).numero}</span>
+                    <p className="font-semibold text-gray-900 truncate">{p.cliente.nombre}</p>
+                    <p className="text-xs text-gray-500">{p.cliente.telefono}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${ESTADO_COLORS[p.estado] ?? "bg-gray-100"}`}>
+                      {ESTADO_LABELS[p.estado] ?? p.estado}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${PAGO_COLORS[p.estadoPago] ?? "bg-gray-100"}`}>
+                      {p.estadoPago}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col items-end gap-1 shrink-0">
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${ESTADO_COLORS[p.estado] ?? "bg-gray-100"}`}>
-                    {ESTADO_LABELS[p.estado] ?? p.estado}
-                  </span>
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${PAGO_COLORS[p.estadoPago] ?? "bg-gray-100"}`}>
-                    {p.estadoPago}
-                  </span>
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex gap-3">
+                    <span className="text-gray-600">Total: <strong>${p.total.toLocaleString()}</strong></span>
+                    {p.saldo > 0 && (
+                      <span className="text-red-600 font-medium">Saldo: ${p.saldo.toLocaleString()}</span>
+                    )}
+                  </div>
+                  <span className="text-xs text-gray-400">{new Date(p.createdAt).toLocaleDateString("es-AR")}</span>
                 </div>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex gap-3">
-                  <span className="text-gray-600">Total: <strong>${p.total.toLocaleString()}</strong></span>
-                  {p.saldo > 0 && (
-                    <span className="text-red-600 font-medium">Saldo: ${p.saldo.toLocaleString()}</span>
-                  )}
-                </div>
-                <span className="text-xs text-gray-400">{new Date(p.createdAt).toLocaleDateString("es-AR")}</span>
-              </div>
+              </Link>
               {p.estado === "pendiente_recepcion" && (
-                <div className="mt-2 pt-2 border-t border-gray-100">
-                  <Link
-                    href={`/recepcion/${p.id}`}
-                    className="text-orange-600 text-xs font-medium hover:underline"
-                  >
-                    → Recepcionar
-                  </Link>
-                </div>
+                <Link
+                  href={`/recepcion/${p.id}`}
+                  className="block px-4 py-2 border-t border-gray-100 text-orange-600 text-xs font-medium hover:bg-orange-50"
+                >
+                  → Recepcionar
+                </Link>
               )}
-            </Link>
+            </div>
           ))}
         </div>
       )}
