@@ -193,7 +193,6 @@ export default async function PedidosPage({
                 <div className="mt-2 pt-2 border-t border-gray-100">
                   <Link
                     href={`/recepcion/${p.id}`}
-                    onClick={(e) => e.stopPropagation()}
                     className="text-orange-600 text-xs font-medium hover:underline"
                   >
                     → Recepcionar
