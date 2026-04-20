@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { calcularCanastos, PRECIOS } from "@/lib/constants";
 
 type Item = { tipo: string; cantidad: number; precioUnitario: number };
+type PedidoItem = { id: string; nombreProducto: string; precioUnitario: number; cantidad: number };
 type Pedido = {
   id: string;
   numero: number;
@@ -16,6 +17,7 @@ type Pedido = {
   createdAt: string;
   cliente: { nombre: string; telefono: string; direccion?: string };
   items: Item[];
+  pedidoItems: PedidoItem[];
 };
 
 const TIPO_LABELS: Record<string, string> = {
@@ -101,6 +103,12 @@ export default function ConfirmarPedidoPage() {
                 </div>
               );
             })}
+            {pedido.pedidoItems?.map((pi) => (
+              <div key={pi.id} className="flex justify-between text-sm">
+                <span>{pi.cantidad > 1 ? `${pi.cantidad}x ` : ""}{pi.nombreProducto}</span>
+                <span className="font-medium">${(pi.precioUnitario * pi.cantidad).toLocaleString()}</span>
+              </div>
+            ))}
           </div>
         </div>
 
